@@ -143,8 +143,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .chip.on{border-color:var(--primary);background:#eef2ff;color:var(--primary);font-weight:700}
 .repeat-box{margin-top:8px;padding:12px;background:#f7f9ff;border-radius:8px;border:1px solid #c7d7fb}
 .hint{font-size:11px;color:var(--text2);margin-top:5px;line-height:1.7}
-.errmsg{color:#dc2626;font-size:11px;margin-top:6px;padding:8px 10px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;display:none}
-.errmsg.show{display:block}
+.errmsg{color:#b91c1c;font-size:12px;font-weight:600;margin-top:8px;padding:12px 14px;background:#fef2f2;border-radius:8px;border:2px solid #f87171;display:none;align-items:center;gap:8px;line-height:1.5}
+.errmsg.show{display:flex}
+.errmsg::before{content:'⛔';font-size:16px;flex-shrink:0}
 .modal-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
 .btn{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .12s;border:none;display:inline-flex;align-items:center;gap:5px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -653,7 +654,7 @@ function renderDay(){
   html+=`<div style="width:52px;flex-shrink:0;background:#f8fafc;border-right:2px solid #c7d7fb;">`;
   SLOTS.forEach(s=>{
     const isH=s.endsWith(':00');
-    html+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 8px 0 0;font-size:10px;font-weight:${isH?700:500};color:${isH?'#4b72c8':'#b0bec5'};border-bottom:${isH?'1.5px solid #bfcfef':'1px dashed #dde8f5'};box-sizing:border-box;">${isH?s:''}</div>`;
+    html+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 8px 0 0;font-size:10px;font-weight:${isH?700:400};color:${isH?'#3b5fc0':'#c5d0e0'};border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};box-sizing:border-box;">${isH?s:''}</div>`;
   });
   html+=`</div>`;
   // room col
@@ -662,8 +663,8 @@ function renderDay(){
     const isH=s.endsWith(':00');
     const slotM=t2m(s);
     const isBooked=bookedMins.has(slotM);
-    const bg=isBooked?'#f0f4ff':'';
-    html+=`<div style="height:${ROW_H}px;border-bottom:${isH?'1.5px solid #bfcfef':'1px dashed #dde8f5'};background:${bg};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
+    const bg=isBooked?'#eef2ff':'';
+    html+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};background:${bg};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
       ${!isBooked?`onmouseenter="this.style.background='#e8f0fe'" onmouseleave="this.style.background=''"`:''} 
       onclick="cellClick('${s}','${ds}')"></div>`;
   });
@@ -720,7 +721,7 @@ function renderWeek(){
   innerHtml+=`<div class="wk-times">`;
   SLOTS.forEach(s=>{
     const isH=s.endsWith(':00');
-    innerHtml+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:9px;font-weight:${isH?700:500};color:${isH?'#4b72c8':'#b0bec5'};border-bottom:${isH?'1.5px solid #bfcfef':'1px dashed #dde8f5'};box-sizing:border-box;">${isH?s:''}</div>`;
+    innerHtml+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:9px;font-weight:${isH?700:400};color:${isH?'#3b5fc0':'#c5d0e0'};border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};box-sizing:border-box;">${isH?s:''}</div>`;
   });
   innerHtml+=`</div>`;
 
@@ -738,7 +739,7 @@ function renderWeek(){
       const isH=s.endsWith(':00');
       const slotM=t2m(s);
       const isBooked=bookedMins.has(slotM);
-      innerHtml+=`<div style="height:${ROW_H}px;border-bottom:${isH?'1.5px solid #bfcfef':'1px dashed #dde8f5'};background:${isBooked?'#f0f4ff':''};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
+      innerHtml+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};background:${isBooked?'#eef2ff':''};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
         ${!isBooked?`onmouseenter="this.style.background='#e8f0fe'" onmouseleave="this.style.background=''"`:''} 
         onclick="cellClick('${s}','${ds}')"></div>`;
     });
@@ -795,6 +796,7 @@ function syncEnd(pre){
   const si=document.getElementById('rStart'),el=document.getElementById('rEnd');
   const idx=ALL_TIMES.indexOf(si.value);
   el.innerHTML=ALL_TIMES.slice(idx+1).map(t=>`<option value="${t}"${t===pre?' selected':''}>${t}</option>`).join('');
+  resetBtn(); document.getElementById('cErr').classList.remove('show');
 }
 
 /* ════ CREATE MODAL ════ */
@@ -817,6 +819,7 @@ function pickRep(v,btn){
   document.querySelectorAll('#repChips .chip').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');document.getElementById('repVal').value=v;
   document.getElementById('repBox').style.display=v==='none'?'none':'block';
+  resetBtn(); document.getElementById('cErr').classList.remove('show');
 }
 
 /* ════ SUBMIT ════ */
@@ -842,7 +845,7 @@ async function submitRes(){
   if(rep!=='none'&&!repE){err('반복 종료일을 선택해주세요.');return;}
   if(rep!=='none'&&repE<=date){err('반복 종료일은 예약 날짜 이후여야 합니다.');return;}
 
-  try{const d=await apiGet();rsvs=Array.isArray(d)?d:[];}catch{}
+  try{const d=await apiGet();rsvs=Array.isArray(d)?d.map(normalizeRsv):[];}catch{}
 
   const dates=[date];
   if(rep!=='none'){
@@ -851,7 +854,13 @@ async function submitRes(){
   }
   for(const d of dates){
     const cf=rsvs.filter(r=>r.date===d&&r.id!==eId&&t2m(r.startTime)<t2m(en)&&t2m(r.endTime)>t2m(st));
-    if(cf.length){err(`${fmtDate(d)} 해당 시간대에 이미 예약이 있습니다.`);return;}
+    if(cf.length){
+      err(`${fmtDate(d)} 해당 시간대에 이미 "${cf[0].title}" 예약이 있습니다.`);
+      // 버튼 비활성화
+      const b=document.getElementById('submitBtn');
+      b.disabled=true;b.innerHTML='🚫 예약 불가';
+      return;
+    }
   }
 
   const btn=document.getElementById('submitBtn');
