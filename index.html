@@ -489,6 +489,24 @@ async function apiPost(payload){
 async function apiSave(rsv){ await apiPost({action:'save',data:rsv}); }
 async function apiDelete(ids){ await apiPost({action:'delete',ids}); }
 
+/* ════ DATA NORMALIZE ════ */
+// 구글 시트가 날짜/시간을 자체 형식으로 변환하는 문제 보정
+function normalizeRsv(r){
+  // 날짜 보정: "Tue Apr 01 2025 00:00:00 GMT+0900" → "2025-04-01"
+  if(r.date && (r.date.includes('GMT') || r.date.includes(' '))){
+    const d=new Date(r.date);
+    if(!isNaN(d)) r.date=d2s(d);
+  }
+  // 시간 보정: "Sat Dec 30 1899 09:00:00 GMT+0900" → "09:00"
+  ['startTime','endTime'].forEach(k=>{
+    if(r[k] && r[k].includes(' ')){
+      const d=new Date(r[k]);
+      if(!isNaN(d)) r[k]=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
+  });
+  return r;
+}
+
 /* ════ LOAD DATA ════ */
 async function loadData(spin=false){
   if(!GS_URL) return;
@@ -496,7 +514,7 @@ async function loadData(spin=false){
   setStatus('ing','불러오는 중...');
   try{
     const data=await apiGet();
-    rsvs=Array.isArray(data)?data:[];
+    rsvs=Array.isArray(data)?data.map(normalizeRsv):[];
     setStatus('ok','연결됨'); render();
     const hash=location.hash.replace('#','');
     if(hash){ const r=rsvs.find(x=>x.id===hash); if(r){ selDate=new Date(r.date+'T00:00:00'); render(); setTimeout(()=>openView(hash),120); } }
