@@ -651,10 +651,10 @@ function renderDay(){
 
   let html=`<div style="display:flex;width:100%;position:relative;">`;
   // time col
-  html+=`<div style="width:52px;flex-shrink:0;background:#f8fafc;border-right:2px solid #c7d7fb;">`;
+  html+=`<div style="width:52px;flex-shrink:0;background:#f4f6fb;border-right:2px solid #94aee8;">`;
   SLOTS.forEach(s=>{
     const isH=s.endsWith(':00');
-    html+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 8px 0 0;font-size:10px;font-weight:${isH?700:400};color:${isH?'#3b5fc0':'#c5d0e0'};border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};box-sizing:border-box;">${isH?s:''}</div>`;
+    html+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 8px 0 0;font-size:10px;font-weight:${isH?800:400};color:${isH?'#1a3fa0':'#c8d4e8'};border-bottom:${isH?'2px solid #7b9de0':'1px dotted #dce6f5'};box-sizing:border-box;">${isH?s:''}</div>`;
   });
   html+=`</div>`;
   // room col
@@ -664,7 +664,7 @@ function renderDay(){
     const slotM=t2m(s);
     const isBooked=bookedMins.has(slotM);
     const bg=isBooked?'#eef2ff':'';
-    html+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};background:${bg};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
+    html+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #7b9de0':'1px dotted #dce6f5'};background:${bg};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
       ${!isBooked?`onmouseenter="this.style.background='#e8f0fe'" onmouseleave="this.style.background=''"`:''} 
       onclick="cellClick('${s}','${ds}')"></div>`;
   });
@@ -721,7 +721,7 @@ function renderWeek(){
   innerHtml+=`<div class="wk-times">`;
   SLOTS.forEach(s=>{
     const isH=s.endsWith(':00');
-    innerHtml+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:9px;font-weight:${isH?700:400};color:${isH?'#3b5fc0':'#c5d0e0'};border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};box-sizing:border-box;">${isH?s:''}</div>`;
+    innerHtml+=`<div style="height:${ROW_H}px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:9px;font-weight:${isH?800:400};color:${isH?'#1a3fa0':'#c8d4e8'};border-bottom:${isH?'2px solid #7b9de0':'1px dotted #dce6f5'};box-sizing:border-box;">${isH?s:''}</div>`;
   });
   innerHtml+=`</div>`;
 
@@ -739,7 +739,7 @@ function renderWeek(){
       const isH=s.endsWith(':00');
       const slotM=t2m(s);
       const isBooked=bookedMins.has(slotM);
-      innerHtml+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #c7d7fb':'1px dashed #e8eef8'};background:${isBooked?'#eef2ff':''};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
+      innerHtml+=`<div style="height:${ROW_H}px;border-bottom:${isH?'2px solid #7b9de0':'1px dotted #dce6f5'};background:${isBooked?'#eef2ff':''};cursor:${isBooked?'not-allowed':'pointer'};transition:background .1s;"
         ${!isBooked?`onmouseenter="this.style.background='#e8f0fe'" onmouseleave="this.style.background=''"`:''} 
         onclick="cellClick('${s}','${ds}')"></div>`;
     });
@@ -864,7 +864,7 @@ async function submitRes(){
   }
 
   const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.innerHTML=`<span class="spinner"></span> 저장 중...`;
+  btn.disabled=true;btn.innerHTML=`<span class="spinner"></span> 저장 중... (잠시 기다려주세요)`;
   const gid=eId?(rsvs.find(r=>r.id===eId)?.groupId||uid()):uid();
   let lastId=eId||null;
   try{
@@ -881,7 +881,10 @@ async function submitRes(){
     }
     closeM('mCreate');selDate=new Date(date+'T00:00:00');
     if(curView==='week')weekStart=getMondayOf(selDate);
-    render();openView(lastId);
+    render();
+    // 저장 완료 후 2.5초 뒤 상세 팝업 오픈
+    btn.innerHTML='✅ 저장 완료!';
+    setTimeout(()=>{ openView(lastId); }, 2500);
   }catch(e){err('저장 실패: '+e.message);resetBtn();}
 }
 
@@ -955,7 +958,15 @@ async function execDelete(){
   closeM('mDelRep');await doConfirmDelete(ids);
 }
 async function doConfirmDelete(ids){
-  try{await apiDelete(ids);rsvs=rsvs.filter(x=>!ids.includes(x.id));render();showToast('🗑 예약이 삭제되었습니다');}
+  try{
+    // 삭제 중 토스트 표시
+    showToast('🔄 삭제 처리 중...', 3000);
+    await apiDelete(ids);
+    rsvs=rsvs.filter(x=>!ids.includes(x.id));
+    render();
+    // 2.5초 뒤 완료 토스트
+    setTimeout(()=>{ showToast('🗑 예약이 삭제되었습니다'); }, 2500);
+  }
   catch(e){showToast('❌ 삭제 실패: '+e.message);}
 }
 
